@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Signature Builder — Maria Belevitskaya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:wght@400;600;700&family=Libre+Baskerville:wght@400;700&family=Manrope:wght@400;500;600;700;800&family=Syne:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Archivo:wght@400;500;600;700;800;900&family=Crimson+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Base theme — warm neutral (original) */
+    --bg-page: #f0eeeb;
+    --bg-card: #ffffff;
+    --bg-panel: #ffffff;
+    --color-name: #1a1a1a;
+    --color-position: #7a7570;
+    --color-company: #444444;
+    --color-detail: #5a5550;
+    --color-label: #8a8580;
+    --color-link: #1a1a1a;
+    --color-link-hover: #555555;
+    --color-divider-top: #d4d0cc;
+    --color-divider-bot: #bfb9b3;
+    --color-bar-l: #2c2c2c;
+    --color-bar-m: #6b6b6b;
+    --color-bar-r: #2c2c2c;
+    --color-disclaimer: #b0aaa4;
+    --color-border: #eae7e3;
+    --color-muted: #8a8580;
+    --color-btn-bg: #1a1a1a;
+    --color-btn-hover: #333333;
+    --color-btn-text: #ffffff;
+    --color-editable-border: #ccc;
+    --color-editable-hover: #999;
+    --color-editable-focus: #666;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.06);
+    --shadow-panel: 0 1px 3px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04);
+
+    --font-heading: 'DM Sans', Helvetica, sans-serif;
+    --font-body: 'DM Sans', Helvetica, sans-serif;
+    --font-label: 'DM Sans', Helvetica, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-page);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 20px 60px;
+    color: var(--color-name);
+    transition: background 0.4s, color 0.4s;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .page-title {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--color-name);
+    margin-bottom: 6px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* ══════════ CONTROLS PANEL ══════════ */
+  .controls {
+    max-width: 660px;
+    width: 100%;
+    background: var(--bg-panel);
+    border-radius: 14px;
+    padding: 28px 32px 24px;
+    box-shadow: var(--shadow-panel);
+    margin-bottom: 28px;
+    transition: background 0.4s, box-shadow 0.4s;
+  }
+
+  .controls-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 20px;
+  }
+
+  .control-row {
+    margin-bottom: 22px;
+  }
+  .control-row:last-child { margin-bottom: 0; }
+
+  .control-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-detail);
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+  }
+
+  .option-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .option-btn {
+    padding: 8px 16px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 8px;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-detail);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .option-btn:hover {
+    border-color: var(--color-muted);
+    background: var(--bg-page);
+  }
+  .option-btn.active {
+    border-color: var(--color-name);
+    background: var(--color-name);
+    color: var(--color-btn-text);
+  }
+
+  /* Color swatches */
+  .swatch-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 2.5px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .swatch-btn:hover { transform: scale(1.08); }
+  .swatch-btn.active {
+    border-color: var(--color-name);
+    box-shadow: 0 0 0 2px var(--bg-page), 0 0 0 4px var(--color-name);
+  }
+  .swatch-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 7px;
+  }
+
+  /* ══════════ SIGNATURE PREVIEW ══════════ */
+  .signature-wrapper {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 48px 52px;
+    box-shadow: var(--shadow-card);
+    max-width: 660px;
+    width: 100%;
+    margin-bottom: 28px;
+    position: relative;
+    transition: all 0.4s;
+  }
+
+  .signature-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 32px; right: 32px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-bar-l), var(--color-bar-m), var(--color-bar-r));
+    border-radius: 0 0 3px 3px;
+    transition: background 0.4s;
+  }
+
+  /* ── Layout: Horizontal (default) ── */
+  .sig-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .sig-left { vertical-align: top; padding-right: 0; }
+  .sig-divider-cell { width: 2px; padding: 0 24px; vertical-align: top; }
+  .sig-divider {
+    width: 2px; height: 100%; min-height: 80px;
+    background: linear-gradient(180deg, var(--color-divider-top), var(--color-divider-bot));
+    border-radius: 2px;
+    transition: background 0.4s;
+  }
+
+  .sig-name {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--color-name);
+    letter-spacing: -0.2px;
+    margin-bottom: 3px;
+    line-height: 1.3;
+    transition: all 0.3s;
+  }
+
+  .sig-position {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-position);
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+    transition: color 0.4s;
+  }
+
+  .sig-company {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-company);
+    letter-spacing: 0.3px;
+    transition: color 0.4s;
+  }
+
+  .sig-details { vertical-align: top; padding-top: 2px; }
+
+  .sig-detail-row {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    color: var(--color-detail);
+    line-height: 1.9;
+    white-space: nowrap;
+    transition: color 0.4s;
+  }
+
+  .sig-detail-row .label {
+    font-family: var(--font-label);
+    font-weight: 600;
+    color: var(--color-label);
+    display: inline-block;
+    width: 62px;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 1px;
+    vertical-align: middle;
+    transition: color 0.4s;
+  }
+
+  .sig-detail-row a {
+    color: var(--color-link);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .sig-detail-row a:hover { color: var(--color-link-hover); }
+
+  .sig-disclaimer {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--color-border);
+    font-size: 9.5px;
+    color: var(--color-disclaimer);
+    line-height: 1.5;
+    letter-spacing: 0.1px;
+    max-width: 460px;
+    transition: all 0.4s;
+  }
+
+  .sig-social { margin-top: 12px; display: flex; gap: 10px; }
+  .sig-social a {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 5px;
+    background: var(--color-label);
+    transition: all 0.2s;
+  }
+  .sig-social a:hover { opacity: 0.8; transform: scale(1.1); }
+  .sig-social svg { width: 13px; height: 13px; fill: var(--bg-card); }
+
+  /* Layout: Stacked */
+  .layout-stacked .sig-table { display: flex; flex-direction: column; }
+  .layout-stacked .sig-table tr { display: flex; flex-direction: column; }
+  .layout-stacked .sig-divider-cell { display: none; }
+  .layout-stacked .sig-left {
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .layout-stacked .sig-details { padding-top: 0; }
+
+  /* Layout: Compact */
+  .layout-compact .signature-wrapper { padding: 28px 32px; }
+  .layout-compact .sig-name { font-size: 16px; margin-bottom: 1px; }
+  .layout-compact .sig-position { font-size: 12px; }
+  .layout-compact .sig-company { font-size: 12px; }
+  .layout-compact .sig-detail-row { font-size: 11.5px; line-height: 1.7; }
+  .layout-compact .sig-detail-row .label { width: 52px; font-size: 9px; }
+  .layout-compact .sig-divider-cell { padding: 0 16px; }
+  .layout-compact .sig-disclaimer { font-size: 8.5px; margin-top: 12px; padding-top: 10px; }
+
+  /* Layout: Bold */
+  .layout-bold .sig-name { font-size: 24px; letter-spacing: -0.5px; margin-bottom: 5px; }
+  .layout-bold .sig-position { font-size: 14px; }
+  .layout-bold .sig-company { font-size: 14px; font-weight: 700; }
+  .layout-bold .sig-detail-row { font-size: 13px; }
+  .layout-bold .sig-detail-row .label { width: 68px; font-size: 10.5px; }
+  .layout-bold .signature-wrapper { padding: 52px 56px; }
+
+  /* Editable */
+  .editable {
+    background: none;
+    border: none;
+    border-bottom: 1px dashed var(--color-editable-border);
+    padding: 0 1px;
+    cursor: text;
+    transition: border-color 0.2s;
+  }
+  .editable:hover { border-bottom-color: var(--color-editable-hover); }
+  .editable:focus { outline: none; border-bottom: 1px solid var(--color-editable-focus); }
+
+  /* Content extras — hidden by default */
+  .content-extra { display: none; }
+  .content-full .content-extra { display: block; }
+  .content-full .content-extra-inline { display: flex; }
+  .content-extra-inline { display: none; }
+
+  /* ══════════ BOTTOM ACTIONS ══════════ */
+  .actions {
+    max-width: 660px;
+    width: 100%;
+    background: var(--bg-panel);
+    border-radius: 12px;
+    padding: 24px 32px;
+    box-shadow: var(--shadow-panel);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    transition: background 0.4s;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 24px;
+    background: var(--color-btn-bg);
+    color: var(--color-btn-text);
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .copy-btn:hover { background: var(--color-btn-hover); }
+  .copy-btn:active { transform: scale(0.97); }
+  .copy-btn svg {
+    width: 15px; height: 15px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .copy-feedback {
+    font-size: 13px;
+    color: #5a9a5a;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .copy-feedback.show { opacity: 1; }
+
+  .actions-hint {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--color-muted);
+    letter-spacing: 0.2px;
+  }
+
+  /* ── Add-field buttons ── */
+  .add-field-row {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .add-field-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1.5px dashed var(--color-editable-border);
+    border-radius: 6px;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .add-field-btn:hover {
+    border-color: var(--color-name);
+    color: var(--color-name);
+    background: var(--bg-page);
+  }
+  .add-field-btn svg {
+    width: 11px; height: 11px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2.5; stroke-linecap: round;
+  }
+
+  .remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px; height: 16px;
+    border: none;
+    background: transparent;
+    color: var(--color-editable-border);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 3px;
+    margin-left: 4px;
+    transition: all 0.15s;
+    vertical-align: middle;
+    padding: 0;
+  }
+  .remove-btn:hover {
+    color: #c44;
+    background: rgba(204,68,68,0.08);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .signature-wrapper { padding: 28px 20px; }
+    .controls { padding: 20px 18px; }
+    .actions { padding: 18px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">Signature Builder</div>
+  <div class="page-subtitle">Maria Belevitskaya</div>
+</div>
+
+<!-- ══════════ DESIGN CONTROLS ══════════ -->
+<div class="controls">
+  <div class="controls-title">Design Controls</div>
+
+  <!-- Color Theme -->
+  <div class="control-row">
+    <div class="control-label">Color Theme</div>
+    <div class="option-grid" id="themeGrid">
+      <button class="swatch-btn active" data-theme="warm" title="Warm Neutral" style="background: linear-gradient(135deg, #f0eeeb 50%, #2c2c2c 50%)"></button>
+      <button class="swatch-btn" data-theme="ocean" title="Deep Ocean" style="background: linear-gradient(135deg, #e8eff5 50%, #1a3a5c 50%)"></button>
+      <button class="swatch-btn" data-theme="forest" title="Forest" style="background: linear-gradient(135deg, #eef2ea 50%, #2d4a3e 50%)"></button>
+      <button class="swatch-btn" data-theme="midnight" title="Midnight" style="background: linear-gradient(135deg, #1a1a2e 50%, #c4a35a 50%)"></button>
+      <button class="swatch-btn" data-theme="rose" title="Rosé" style="background: linear-gradient(135deg, #f9f0f0 50%, #8c4a5a 50%)"></button>
+      <button class="swatch-btn" data-theme="mono" title="Pure Mono" style="background: linear-gradient(135deg, #f5f5f5 50%, #111111 50%)"></button>
+      <button class="swatch-btn" data-theme="terracotta" title="Terracotta" style="background: linear-gradient(135deg, #f5ece4 50%, #b0603a 50%)"></button>
+      <button class="swatch-btn" data-theme="lavender" title="Lavender" style="background: linear-gradient(135deg, #f0ecf5 50%, #5a4a7a 50%)"></button>
+    </div>
+  </div>
+
+  <!-- Font Pairing -->
+  <div class="control-row">
+    <div class="control-label">Font Pairing</div>
+    <div class="option-grid" id="fontGrid">
+      <button class="option-btn active" data-font="dm">DM Sans</button>
+      <button class="option-btn" data-font="playfair">Playfair + Manrope</button>
+      <button class="option-btn" data-font="cormorant">Cormorant + Outfit</button>
+      <button class="option-btn" data-font="syne">Syne + DM Sans</button>
+      <button class="option-btn" data-font="archivo">Archivo Black</button>
+      <button class="option-btn" data-font="serif">Source Serif + Manrope</button>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="control-row">
+    <div class="control-label">Layout</div>
+    <div class="option-grid" id="layoutGrid">
+      <button class="option-btn active" data-layout="horizontal">Horizontal</button>
+      <button class="option-btn" data-layout="stacked">Stacked</button>
+      <button class="option-btn" data-layout="compact">Compact</button>
+      <button class="option-btn" data-layout="bold">Bold</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="control-row">
+    <div class="control-label">Content</div>
+    <div class="option-grid" id="contentGrid">
+      <button class="option-btn active" data-content="minimal">Minimal</button>
+      <button class="option-btn" data-content="full">Full (social + tagline)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SIGNATURE PREVIEW ══════════ -->
+<div id="sigOuter">
+  <div class="signature-wrapper" id="signatureBlock">
+    <table class="sig-table" cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td class="sig-left" style="min-width: 180px;">
+          <div class="sig-name">Maria Belevitskaya</div>
+          <div class="sig-position"><span class="editable" contenteditable="true" data-placeholder="Your Position">[Your Position]</span></div>
+          <div class="sig-company"><span class="editable" contenteditable="true" data-placeholder="Company Name">[Company Name]</span></div>
+          <div class="content-extra" style="margin-top:8px;font-size:11.5px;font-style:italic;color:var(--color-position);">
+            <span class="editable" contenteditable="true" data-placeholder="Your tagline or motto">[Your tagline or motto]</span>
+          </div>
+        </td>
+
+        <td class="sig-divider-cell">
+          <div class="sig-divider"></div>
+        </td>
+
+        <td class="sig-details" id="sigDetails">
+          <div class="sig-detail-row">
+            <span class="label">Phone</span>
+            <a href="tel:+35700000000"><span class="editable" contenteditable="true">+357 00 000 000</span></a>
+            <span style="font-size:10px;color:var(--color-muted);margin-left:2px;">CY</span>
+          </div>
+          <div class="sig-detail-row">
+            <span class="label">Phone</span>
+            <a href="tel:+44000000000"><span class="editable" contenteditable="true">+44 000 000 0000</span></a>
+            <span style="font-size:10px;color:var(--color-muted);margin-left:2px;">UK</span>
+          </div>
+          <div class="sig-detail-row">
+            <span class="label">Email</span>
+            <a href="mailto:maria@company.com"><span class="editable" contenteditable="true">maria@company.com</span></a>
+          </div>
+          <div class="sig-detail-row">
+            <span class="label">Web</span>
+            <a href="https://www.company.com"><span class="editable" contenteditable="true">www.company.com</span></a>
+          </div>
+          <div class="sig-detail-row">
+            <span class="label">Address</span>
+            <span class="editable" contenteditable="true">[Office Address, City, Country]</span>
+          </div>
+          <!-- Add field buttons -->
+          <div class="add-field-row" id="addFieldRow">
+            <button class="add-field-btn" onclick="addField('phone')" title="Add phone number">
+              <svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+              Phone
+            </button>
+            <button class="add-field-btn" onclick="addField('email')" title="Add email">
+              <svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+              Email
+            </button>
+            <button class="add-field-btn" onclick="addField('address')" title="Add address">
+              <svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+              Address
+            </button>
+            <button class="add-field-btn" onclick="addField('web')" title="Add website">
+              <svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+              Website
+            </button>
+            <button class="add-field-btn" onclick="addField('custom')" title="Add custom field">
+              <svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+              Custom
+            </button>
+          </div>
+          <!-- Social icons — shown in "full" content mode -->
+          <div class="sig-social content-extra-inline" style="margin-top:10px;">
+            <a href="#" title="LinkedIn">
+              <svg viewBox="0 0 24 24"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+            </a>
+            <a href="#" title="Telegram">
+              <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6.54l-1.83 8.63c-.12.56-.47.7-.95.43l-2.63-1.94-1.27 1.22c-.14.14-.26.26-.53.26l.19-2.67 4.87-4.4c.21-.19-.05-.3-.33-.12l-6.02 3.79-2.59-.81c-.56-.17-.57-.56.12-.83l10.12-3.9c.47-.17.88.12.72.83z"/></svg>
+            </a>
+            <a href="#" title="Instagram">
+              <svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.97.25 2.43.41a4.07 4.07 0 011.52.99c.46.46.76.93.99 1.52.17.46.36 1.26.41 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.97-.41 2.43a4.07 4.07 0 01-.99 1.52 4.07 4.07 0 01-1.52.99c-.46.17-1.26.36-2.43.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.97-.25-2.43-.41a4.07 4.07 0 01-1.52-.99 4.07 4.07 0 01-.99-1.52c-.17-.46-.36-1.26-.41-2.43C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.97.41-2.43a4.07 4.07 0 01.99-1.52 4.07 4.07 0 011.52-.99c.46-.17 1.26-.36 2.43-.41C8.42 2.17 8.8 2.16 12 2.16zM12 5a7 7 0 100 14 7 7 0 000-14zm0 11.5a4.5 4.5 0 110-9 4.5 4.5 0 010 9zm7.28-11.78a1.64 1.64 0 11-3.28 0 1.64 1.64 0 013.28 0z"/></svg>
+            </a>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="sig-disclaimer">
+      This email and any attachments are confidential. If you have received this message in error, please notify the sender and delete it immediately.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ACTIONS ══════════ -->
+<div class="actions">
+  <button class="copy-btn" onclick="copySignature()">
+    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+    Copy Signature
+  </button>
+  <span class="copy-feedback" id="copyFeedback">Copied!</span>
+  <span class="actions-hint">Edit fields above, then copy → paste into Gmail / Outlook</span>
+</div>
+
+<script>
+/* ════════════════════════════════════
+   THEME DEFINITIONS
+   ════════════════════════════════════ */
+const THEMES = {
+  warm: {
+    '--bg-page':'#f0eeeb','--bg-card':'#ffffff','--bg-panel':'#ffffff',
+    '--color-name':'#1a1a1a','--color-position':'#7a7570','--color-company':'#444',
+    '--color-detail':'#5a5550','--color-label':'#8a8580','--color-link':'#1a1a1a',
+    '--color-link-hover':'#555','--color-divider-top':'#d4d0cc','--color-divider-bot':'#bfb9b3',
+    '--color-bar-l':'#2c2c2c','--color-bar-m':'#6b6b6b','--color-bar-r':'#2c2c2c',
+    '--color-disclaimer':'#b0aaa4','--color-border':'#eae7e3','--color-muted':'#8a8580',
+    '--color-btn-bg':'#1a1a1a','--color-btn-hover':'#333','--color-btn-text':'#fff',
+    '--color-editable-border':'#ccc','--color-editable-hover':'#999','--color-editable-focus':'#666'
+  },
+  ocean: {
+    '--bg-page':'#e8eff5','--bg-card':'#ffffff','--bg-panel':'#ffffff',
+    '--color-name':'#1a3a5c','--color-position':'#5a7a94','--color-company':'#2c5a7a',
+    '--color-detail':'#4a6a80','--color-label':'#7a9ab0','--color-link':'#1a3a5c',
+    '--color-link-hover':'#3a6a8c','--color-divider-top':'#a0c0d8','--color-divider-bot':'#7aa0c0',
+    '--color-bar-l':'#1a3a5c','--color-bar-m':'#4a8ab8','--color-bar-r':'#1a3a5c',
+    '--color-disclaimer':'#90aabb','--color-border':'#d8e8f0','--color-muted':'#7a9ab0',
+    '--color-btn-bg':'#1a3a5c','--color-btn-hover':'#2a5a7c','--color-btn-text':'#fff',
+    '--color-editable-border':'#b0c8d8','--color-editable-hover':'#7aa0c0','--color-editable-focus':'#4a7a9a'
+  },
+  forest: {
+    '--bg-page':'#eef2ea','--bg-card':'#ffffff','--bg-panel':'#ffffff',
+    '--color-name':'#2d4a3e','--color-position':'#5a7a68','--color-company':'#3a5a4a',
+    '--color-detail':'#4a6a58','--color-label':'#7a9a88','--color-link':'#2d4a3e',
+    '--color-link-hover':'#4a7a5a','--color-divider-top':'#a8c8a8','--color-divider-bot':'#7aaa7a',
+    '--color-bar-l':'#2d4a3e','--color-bar-m':'#5a9a6a','--color-bar-r':'#2d4a3e',
+    '--color-disclaimer':'#90aa98','--color-border':'#d8e8d8','--color-muted':'#7a9a88',
+    '--color-btn-bg':'#2d4a3e','--color-btn-hover':'#3a6a50','--color-btn-text':'#fff',
+    '--color-editable-border':'#a8c8a8','--color-editable-hover':'#7a9a80','--color-editable-focus':'#4a7a5a'
+  },
+  midnight: {
+    '--bg-page':'#13131f','--bg-card':'#1e1e30','--bg-panel':'#1e1e30',
+    '--color-name':'#e8e0d0','--color-position':'#a09880','--color-company':'#c4a35a',
+    '--color-detail':'#9a9080','--color-label':'#706a58','--color-link':'#d8c880',
+    '--color-link-hover':'#e8d8a0','--color-divider-top':'#4a4838','--color-divider-bot':'#3a3828',
+    '--color-bar-l':'#c4a35a','--color-bar-m':'#e8d090','--color-bar-r':'#c4a35a',
+    '--color-disclaimer':'#5a5848','--color-border':'#2e2e40','--color-muted':'#706a58',
+    '--color-btn-bg':'#c4a35a','--color-btn-hover':'#d8b86a','--color-btn-text':'#1a1a2e',
+    '--color-editable-border':'#4a4838','--color-editable-hover':'#6a6550','--color-editable-focus':'#c4a35a'
+  },
+  rose: {
+    '--bg-page':'#f9f0f0','--bg-card':'#ffffff','--bg-panel':'#ffffff',
+    '--color-name':'#4a2a32','--color-position':'#8c6a72','--color-company':'#6a3a48',
+    '--color-detail':'#7a5a62','--color-label':'#a08890','--color-link':'#6a3a48',
+    '--color-link-hover':'#8c4a5a','--color-divider-top':'#d8b0b8','--color-divider-bot':'#c09098',
+    '--color-bar-l':'#8c4a5a','--color-bar-m':'#c08090','--color-bar-r':'#8c4a5a',
+    '--color-disclaimer':'#b8a0a8','--color-border':'#f0d8d8','--color-muted':'#a08890',
+    '--color-btn-bg':'#6a3a48','--color-btn-hover':'#8c4a5a','--color-btn-text':'#fff',
+    '--color-editable-border':'#d0b0b8','--color-editable-hover':'#b08090','--color-editable-focus':'#8c4a5a'
+  },
+  mono: {
+    '--bg-page':'#f5f5f5','--bg-card':'#ffffff','--bg-panel':'#ffffff',
+    '--color-name':'#111111','--color-position':'#666666','--color-company':'#333333',
+    '--color-detail':'#555555','--color-label':'#999999','--color-link':'#111111',
+    '--color-link-hover':'#444444','--color-divider-top':'#cccccc','--color-divider-bot':'#aaaaaa',
+    '--color-bar-l':'#111111','--color-bar-m':'#555555','--color-bar-r':'#111111',
+    '--color-disclaimer':'#aaaaaa','--color-border':'#e8e8e8','--color-muted':'#999999',
+    '--color-btn-bg':'#111111','--color-btn-hover':'#333333','--color-btn-text':'#fff',
+    '--color-editable-border':'#ccc','--color-editable-hover':'#999','--color-editable-focus':'#555'
+  },
+  terracotta: {
+    '--bg-page':'#f5ece4','--bg-card':'#fffaf6','--bg-panel':'#fffaf6',
+    '--color-name':'#3a2820','--color-position':'#8a6a52','--color-company':'#b0603a',
+    '--color-detail':'#7a5a42','--color-label':'#a08a72','--color-link':'#7a4a2a',
+    '--color-link-hover':'#b0603a','--color-divider-top':'#d8b8a0','--color-divider-bot':'#c0a080',
+    '--color-bar-l':'#b0603a','--color-bar-m':'#d8905a','--color-bar-r':'#b0603a',
+    '--color-disclaimer':'#b8a090','--color-border':'#e8d8c8','--color-muted':'#a08a72',
+    '--color-btn-bg':'#7a4a2a','--color-btn-hover':'#9a5a3a','--color-btn-text':'#fff',
+    '--color-editable-border':'#c8b0a0','--color-editable-hover':'#a08870','--color-editable-focus':'#8a5a3a'
+  },
+  lavender: {
+    '--bg-page':'#f0ecf5','--bg-card':'#ffffff','--bg-panel':'#ffffff',
+    '--color-name':'#2a2040','--color-position':'#7a6a90','--color-company':'#5a4a7a',
+    '--color-detail':'#6a5a80','--color-label':'#9a8ab0','--color-link':'#4a3a6a',
+    '--color-link-hover':'#6a5a8a','--color-divider-top':'#c8b8d8','--color-divider-bot':'#a898c0',
+    '--color-bar-l':'#5a4a7a','--color-bar-m':'#8a7aaa','--color-bar-r':'#5a4a7a',
+    '--color-disclaimer':'#a898b0','--color-border':'#e0d8ea','--color-muted':'#9a8ab0',
+    '--color-btn-bg':'#4a3a6a','--color-btn-hover':'#5a4a7a','--color-btn-text':'#fff',
+    '--color-editable-border':'#c0b0d0','--color-editable-hover':'#9888b0','--color-editable-focus':'#6a5a8a'
+  }
+};
+
+const FONTS = {
+  dm: { '--font-heading': "'DM Sans', sans-serif", '--font-body': "'DM Sans', sans-serif", '--font-label': "'DM Sans', sans-serif" },
+  playfair: { '--font-heading': "'Playfair Display', serif", '--font-body': "'Manrope', sans-serif", '--font-label': "'Manrope', sans-serif" },
+  cormorant: { '--font-heading': "'Cormorant Garamond', serif", '--font-body': "'Outfit', sans-serif", '--font-label': "'Outfit', sans-serif" },
+  syne: { '--font-heading': "'Syne', sans-serif", '--font-body': "'DM Sans', sans-serif", '--font-label': "'DM Sans', sans-serif" },
+  archivo: { '--font-heading': "'Archivo', sans-serif", '--font-body': "'Archivo', sans-serif", '--font-label': "'Archivo', sans-serif" },
+  serif: { '--font-heading': "'Source Serif 4', serif", '--font-body': "'Manrope', sans-serif", '--font-label': "'Manrope', sans-serif" }
+};
+
+/* ════════════════════════════════════
+   APPLY FUNCTIONS
+   ════════════════════════════════════ */
+function applyVars(vars) {
+  const r = document.documentElement;
+  for (const [k, v] of Object.entries(vars)) r.style.setProperty(k, v);
+}
+
+function setActive(container, btn) {
+  container.querySelectorAll('.option-btn, .swatch-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+let currentLayout = 'horizontal';
+let currentContent = 'minimal';
+
+function applyLayout(layout) {
+  const outer = document.getElementById('sigOuter');
+  outer.className = '';
+  currentLayout = layout;
+  if (layout !== 'horizontal') outer.classList.add('layout-' + layout);
+}
+
+function applyContent(mode) {
+  const outer = document.getElementById('sigOuter');
+  currentContent = mode;
+  if (mode === 'full') {
+    outer.classList.add('content-full');
+  } else {
+    outer.classList.remove('content-full');
+  }
+}
+
+/* ════════════════════════════════════
+   EVENT LISTENERS
+   ════════════════════════════════════ */
+document.getElementById('themeGrid').addEventListener('click', e => {
+  const btn = e.target.closest('.swatch-btn');
+  if (!btn) return;
+  setActive(e.currentTarget, btn);
+  applyVars(THEMES[btn.dataset.theme]);
+});
+
+document.getElementById('fontGrid').addEventListener('click', e => {
+  const btn = e.target.closest('.option-btn');
+  if (!btn) return;
+  setActive(e.currentTarget, btn);
+  applyVars(FONTS[btn.dataset.font]);
+});
+
+document.getElementById('layoutGrid').addEventListener('click', e => {
+  const btn = e.target.closest('.option-btn');
+  if (!btn) return;
+  setActive(e.currentTarget, btn);
+  applyLayout(btn.dataset.layout);
+});
+
+document.getElementById('contentGrid').addEventListener('click', e => {
+  const btn = e.target.closest('.option-btn');
+  if (!btn) return;
+  setActive(e.currentTarget, btn);
+  applyContent(btn.dataset.content);
+});
+
+/* Editable placeholders */
+document.querySelectorAll('.editable').forEach(el => {
+  el.addEventListener('focus', function () {
+    if (this.textContent.startsWith('[')) this.textContent = '';
+  });
+  el.addEventListener('blur', function () {
+    if (this.textContent.trim() === '' && this.dataset.placeholder)
+      this.textContent = '[' + this.dataset.placeholder + ']';
+  });
+});
+
+/* ════════════════════════════════════
+   COPY — CLEAN OUTPUT
+   ════════════════════════════════════ */
+function copySignature() {
+  const sig = document.getElementById('signatureBlock');
+  const clone = sig.cloneNode(true);
+
+  // Resolve CSS variables to actual color values for email clients
+  const cs = getComputedStyle(document.documentElement);
+  const resolve = v => cs.getPropertyValue(v).trim();
+
+  // Strip editable artifacts
+  clone.querySelectorAll('.editable').forEach(el => {
+    el.removeAttribute('contenteditable');
+    el.classList.remove('editable');
+    el.removeAttribute('style');
+    el.style.borderBottom = 'none';
+    el.style.background = 'none';
+    el.style.border = 'none';
+    el.style.padding = '0';
+  });
+
+  // Remove UI-only elements (add buttons, remove buttons, country tags on static rows)
+  clone.querySelectorAll('.add-field-row, .remove-btn').forEach(el => el.remove());
+
+  // Hide extras if in minimal mode
+  if (currentContent === 'minimal') {
+    clone.querySelectorAll('.content-extra, .content-extra-inline').forEach(el => el.remove());
+  } else {
+    clone.querySelectorAll('.content-extra').forEach(el => el.style.display = 'block');
+    clone.querySelectorAll('.content-extra-inline').forEach(el => el.style.display = 'flex');
+  }
+
+  // Inline key styles for email client compatibility
+  const name = clone.querySelector('.sig-name');
+  if (name) {
+    name.style.fontFamily = resolve('--font-heading');
+    name.style.color = resolve('--color-name');
+    name.style.fontWeight = '700';
+  }
+
+  const pos = clone.querySelector('.sig-position');
+  if (pos) { pos.style.fontFamily = resolve('--font-body'); pos.style.color = resolve('--color-position'); }
+
+  const comp = clone.querySelector('.sig-company');
+  if (comp) { comp.style.fontFamily = resolve('--font-body'); comp.style.color = resolve('--color-company'); comp.style.fontWeight = '600'; }
+
+  clone.querySelectorAll('.sig-detail-row').forEach(row => {
+    row.style.fontFamily = resolve('--font-body');
+    row.style.color = resolve('--color-detail');
+  });
+  clone.querySelectorAll('.sig-detail-row .label').forEach(lbl => {
+    lbl.style.fontFamily = resolve('--font-label');
+    lbl.style.color = resolve('--color-label');
+  });
+  clone.querySelectorAll('.sig-detail-row a').forEach(a => {
+    a.style.color = resolve('--color-link');
+    a.style.textDecoration = 'none';
+  });
+
+  const divider = clone.querySelector('.sig-divider');
+  if (divider) divider.style.background = resolve('--color-divider-top');
+
+  const disc = clone.querySelector('.sig-disclaimer');
+  if (disc) {
+    disc.style.color = resolve('--color-disclaimer');
+    disc.style.borderTopColor = resolve('--color-border');
+  }
+
+  clone.querySelectorAll('.sig-social a').forEach(a => {
+    a.style.background = resolve('--color-label');
+  });
+
+  clone.style.cssText = '';
+
+  const blob = new Blob([clone.innerHTML], { type: 'text/html' });
+  const textBlob = new Blob([clone.innerText], { type: 'text/plain' });
+
+  navigator.clipboard.write([
+    new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })
+  ]).then(() => showFeedback()).catch(() => {
+    const range = document.createRange();
+    range.selectNode(sig);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    showFeedback();
+  });
+}
+
+function showFeedback() {
+  const fb = document.getElementById('copyFeedback');
+  fb.classList.add('show');
+  setTimeout(() => fb.classList.remove('show'), 2200);
+}
+
+/* ════════════════════════════════════
+   ADD / REMOVE FIELDS
+   ════════════════════════════════════ */
+const FIELD_TEMPLATES = {
+  phone: {
+    label: 'Phone',
+    content: '<a href="tel:+000000000"><span class="editable" contenteditable="true">[Phone number]</span></a>',
+  },
+  email: {
+    label: 'Email',
+    content: '<a href="mailto:email@company.com"><span class="editable" contenteditable="true">[email@company.com]</span></a>',
+  },
+  address: {
+    label: 'Address',
+    content: '<span class="editable" contenteditable="true">[Address, City, Country]</span>',
+  },
+  web: {
+    label: 'Web',
+    content: '<a href="#"><span class="editable" contenteditable="true">[www.website.com]</span></a>',
+  },
+  custom: {
+    label: 'Custom',
+    content: '<span class="editable" contenteditable="true">[Your info]</span>',
+    editableLabel: true,
+  }
+};
+
+function addField(type) {
+  const tpl = FIELD_TEMPLATES[type];
+  if (!tpl) return;
+
+  const row = document.createElement('div');
+  row.className = 'sig-detail-row';
+  row.setAttribute('data-dynamic', 'true');
+
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'label';
+  if (tpl.editableLabel) {
+    labelSpan.setAttribute('contenteditable', 'true');
+    labelSpan.classList.add('editable');
+    labelSpan.textContent = tpl.label;
+  } else {
+    labelSpan.textContent = tpl.label;
+  }
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'remove-btn';
+  removeBtn.innerHTML = '×';
+  removeBtn.title = 'Remove';
+  removeBtn.onclick = function () {
+    row.style.transition = 'opacity 0.2s, max-height 0.2s';
+    row.style.opacity = '0';
+    row.style.maxHeight = '0';
+    row.style.overflow = 'hidden';
+    setTimeout(() => row.remove(), 220);
+  };
+
+  row.appendChild(labelSpan);
+  row.insertAdjacentHTML('beforeend', tpl.content);
+  row.appendChild(removeBtn);
+
+  // Insert before the add-field-row
+  const addRow = document.getElementById('addFieldRow');
+  addRow.parentNode.insertBefore(row, addRow);
+
+  // Bind editable placeholder behaviour
+  row.querySelectorAll('.editable').forEach(el => {
+    el.addEventListener('focus', function () {
+      if (this.textContent.startsWith('[')) this.textContent = '';
+    });
+    el.addEventListener('blur', function () {
+      if (this.textContent.trim() === '' && this.dataset.placeholder)
+        this.textContent = '[' + this.dataset.placeholder + ']';
+    });
+  });
+}
+</script>
+</body>
+</html>
