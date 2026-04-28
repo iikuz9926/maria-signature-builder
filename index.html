@@ -783,89 +783,149 @@ document.querySelectorAll('.editable').forEach(el => {
    COPY — CLEAN OUTPUT
    ════════════════════════════════════ */
 function copySignature() {
-  const sig = document.getElementById('signatureBlock');
-  const clone = sig.cloneNode(true);
-
-  // Resolve CSS variables to actual color values for email clients
   const cs = getComputedStyle(document.documentElement);
-  const resolve = v => cs.getPropertyValue(v).trim();
+  const r = v => cs.getPropertyValue(v).trim();
 
-  // Strip editable artifacts
-  clone.querySelectorAll('.editable').forEach(el => {
-    el.removeAttribute('contenteditable');
-    el.classList.remove('editable');
-    el.removeAttribute('style');
-    el.style.borderBottom = 'none';
-    el.style.background = 'none';
-    el.style.border = 'none';
-    el.style.padding = '0';
+  // Read current computed sizes based on layout
+  const sizeMap = {
+    horizontal: { name: '19px', pos: '13px', comp: '13px', detail: '12.5px', lbl: '10px', lblW: '62px', disc: '9.5px' },
+    stacked:    { name: '19px', pos: '13px', comp: '13px', detail: '12.5px', lbl: '10px', lblW: '62px', disc: '9.5px' },
+    compact:    { name: '16px', pos: '12px', comp: '12px', detail: '11.5px', lbl: '9px',  lblW: '52px', disc: '8.5px' },
+    bold:       { name: '24px', pos: '14px', comp: '14px', detail: '13px',   lbl: '10.5px', lblW: '68px', disc: '9.5px' },
+  };
+  const sz = sizeMap[currentLayout] || sizeMap.horizontal;
+
+  const fontH = r('--font-heading');
+  const fontB = r('--font-body');
+  const fontL = r('--font-label');
+
+  // Gather contact rows from the live DOM
+  const detailsEl = document.getElementById('sigDetails');
+  const rows = detailsEl.querySelectorAll('.sig-detail-row');
+  let contactHTML = '';
+  rows.forEach(row => {
+    const labelEl = row.querySelector('.label');
+    if (!labelEl) return;
+    const label = labelEl.textContent.trim();
+
+    // Get the value part (everything after the label, excluding remove button)
+    const removeBtn = row.querySelector('.remove-btn');
+    const clonedRow = row.cloneNode(true);
+    if (clonedRow.querySelector('.remove-btn')) clonedRow.querySelector('.remove-btn').remove();
+    if (clonedRow.querySelector('.label')) clonedRow.querySelector('.label').remove();
+
+    // Clean editables inside
+    clonedRow.querySelectorAll('.editable').forEach(el => {
+      el.removeAttribute('contenteditable');
+      el.style.cssText = '';
+    });
+
+    let valueHTML = clonedRow.innerHTML.trim();
+    // Inline link styles
+    valueHTML = valueHTML.replace(/<a /g, `<a style="color:${r('--color-link')};text-decoration:none;font-weight:500;" `);
+
+    contactHTML += `<tr>
+      <td style="font-family:${fontL};font-weight:600;color:${r('--color-label')};text-transform:uppercase;font-size:${sz.lbl};letter-spacing:1px;vertical-align:middle;width:${sz.lblW};padding:3px 0;">${label}</td>
+      <td style="font-family:${fontB};font-size:${sz.detail};color:${r('--color-detail')};padding:3px 0;">${valueHTML}</td>
+    </tr>`;
   });
 
-  // Remove UI-only elements (add buttons, remove buttons, country tags on static rows)
-  clone.querySelectorAll('.add-field-row, .remove-btn').forEach(el => el.remove());
+  // Social icons (only in full mode)
+  let socialHTML = '';
+  if (currentContent === 'full') {
+    const socialLinks = detailsEl.querySelectorAll('.sig-social a');
+    if (socialLinks.length > 0) {
+      socialHTML = '<tr><td colspan="2" style="padding-top:10px;">';
+      socialLinks.forEach(a => {
+        const svgEl = a.querySelector('svg');
+        const svgHTML = svgEl ? svgEl.outerHTML.replace(/<svg /, `<svg style="width:13px;height:13px;fill:${r('--bg-card')};" `) : '';
+        socialHTML += `<a href="${a.getAttribute('href') || '#'}" title="${a.getAttribute('title') || ''}" style="display:inline-block;width:24px;height:24px;border-radius:5px;background:${r('--color-label')};text-align:center;line-height:24px;margin-right:8px;vertical-align:middle;">${svgHTML}</a>`;
+      });
+      socialHTML += '</td></tr>';
+    }
+  }
 
-  // Hide extras if in minimal mode
-  if (currentContent === 'minimal') {
-    clone.querySelectorAll('.content-extra, .content-extra-inline').forEach(el => el.remove());
+  // Name block
+  const nameEl = document.querySelector('.sig-name');
+  const posEl = document.querySelector('.sig-position');
+  const compEl = document.querySelector('.sig-company');
+  const nameText = nameEl ? nameEl.textContent.trim() : 'Maria Belevitskaya';
+  const posText = posEl ? posEl.textContent.trim() : '';
+  const compText = compEl ? compEl.textContent.trim() : '';
+
+  // Tagline (full mode only)
+  let taglineHTML = '';
+  if (currentContent === 'full') {
+    const tagEl = document.querySelector('.content-extra .editable');
+    if (tagEl && !tagEl.textContent.startsWith('[')) {
+      taglineHTML = `<div style="margin-top:8px;font-size:11.5px;font-style:italic;color:${r('--color-position')};font-family:${fontB};">${tagEl.textContent.trim()}</div>`;
+    }
+  }
+
+  // Build the full signature as an inline-styled table
+  let html = '';
+
+  if (currentLayout === 'stacked') {
+    // STACKED: vertical layout
+    html = `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;max-width:500px;">
+      <tr><td style="padding-bottom:14px;border-bottom:1px solid ${r('--color-border')};">
+        <div style="font-family:${fontH};font-size:${sz.name};font-weight:700;color:${r('--color-name')};line-height:1.3;">${nameText}</div>
+        <div style="font-family:${fontB};font-size:${sz.pos};font-weight:500;color:${r('--color-position')};margin-top:2px;">${posText}</div>
+        <div style="font-family:${fontB};font-size:${sz.comp};font-weight:600;color:${r('--color-company')};margin-top:1px;">${compText}</div>
+        ${taglineHTML}
+      </td></tr>
+      <tr><td style="padding-top:14px;">
+        <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${contactHTML}${socialHTML}</table>
+      </td></tr>
+    </table>`;
   } else {
-    clone.querySelectorAll('.content-extra').forEach(el => el.style.display = 'block');
-    clone.querySelectorAll('.content-extra-inline').forEach(el => el.style.display = 'flex');
+    // HORIZONTAL / COMPACT / BOLD: side-by-side with divider
+    html = `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;max-width:600px;">
+      <tr>
+        <td style="vertical-align:top;padding-right:0;">
+          <div style="font-family:${fontH};font-size:${sz.name};font-weight:700;color:${r('--color-name')};line-height:1.3;">${nameText}</div>
+          <div style="font-family:${fontB};font-size:${sz.pos};font-weight:500;color:${r('--color-position')};margin-top:2px;">${posText}</div>
+          <div style="font-family:${fontB};font-size:${sz.comp};font-weight:600;color:${r('--color-company')};margin-top:1px;">${compText}</div>
+          ${taglineHTML}
+        </td>
+        <td style="width:2px;padding:0 20px;vertical-align:top;">
+          <div style="width:2px;min-height:70px;background:${r('--color-divider-top')};border-radius:2px;"></div>
+        </td>
+        <td style="vertical-align:top;">
+          <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${contactHTML}${socialHTML}</table>
+        </td>
+      </tr>
+    </table>`;
   }
 
-  // Inline key styles for email client compatibility
-  const name = clone.querySelector('.sig-name');
-  if (name) {
-    name.style.fontFamily = resolve('--font-heading');
-    name.style.color = resolve('--color-name');
-    name.style.fontWeight = '700';
+  // Disclaimer
+  const discEl = document.querySelector('.sig-disclaimer');
+  if (discEl) {
+    html += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid ${r('--color-border')};font-family:${fontB};font-size:${sz.disc};color:${r('--color-disclaimer')};line-height:1.5;max-width:460px;">${discEl.textContent.trim()}</div>`;
   }
 
-  const pos = clone.querySelector('.sig-position');
-  if (pos) { pos.style.fontFamily = resolve('--font-body'); pos.style.color = resolve('--color-position'); }
+  // Top gradient bar
+  const fullHTML = `<div style="border-top:3px solid ${r('--color-bar-l')};padding-top:16px;">${html}</div>`;
 
-  const comp = clone.querySelector('.sig-company');
-  if (comp) { comp.style.fontFamily = resolve('--font-body'); comp.style.color = resolve('--color-company'); comp.style.fontWeight = '600'; }
-
-  clone.querySelectorAll('.sig-detail-row').forEach(row => {
-    row.style.fontFamily = resolve('--font-body');
-    row.style.color = resolve('--color-detail');
-  });
-  clone.querySelectorAll('.sig-detail-row .label').forEach(lbl => {
-    lbl.style.fontFamily = resolve('--font-label');
-    lbl.style.color = resolve('--color-label');
-  });
-  clone.querySelectorAll('.sig-detail-row a').forEach(a => {
-    a.style.color = resolve('--color-link');
-    a.style.textDecoration = 'none';
-  });
-
-  const divider = clone.querySelector('.sig-divider');
-  if (divider) divider.style.background = resolve('--color-divider-top');
-
-  const disc = clone.querySelector('.sig-disclaimer');
-  if (disc) {
-    disc.style.color = resolve('--color-disclaimer');
-    disc.style.borderTopColor = resolve('--color-border');
-  }
-
-  clone.querySelectorAll('.sig-social a').forEach(a => {
-    a.style.background = resolve('--color-label');
-  });
-
-  clone.style.cssText = '';
-
-  const blob = new Blob([clone.innerHTML], { type: 'text/html' });
-  const textBlob = new Blob([clone.innerText], { type: 'text/plain' });
+  const blob = new Blob([fullHTML], { type: 'text/html' });
+  const textBlob = new Blob([document.getElementById('signatureBlock').innerText], { type: 'text/plain' });
 
   navigator.clipboard.write([
     new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })
   ]).then(() => showFeedback()).catch(() => {
+    // Fallback: create temp div, select, copy
+    const tmp = document.createElement('div');
+    tmp.innerHTML = fullHTML;
+    tmp.style.position = 'fixed';
+    tmp.style.left = '-9999px';
+    document.body.appendChild(tmp);
     const range = document.createRange();
-    range.selectNode(sig);
+    range.selectNode(tmp);
     window.getSelection().removeAllRanges();
     window.getSelection().addRange(range);
     document.execCommand('copy');
     window.getSelection().removeAllRanges();
+    document.body.removeChild(tmp);
     showFeedback();
   });
 }
